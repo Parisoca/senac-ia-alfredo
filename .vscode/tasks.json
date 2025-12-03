@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dart: Analyze",
+      "type": "shell",
+      "command": "dart analyze",
+      "group": "build"
+    },
+    {
+      "label": "Flutter: Build slim APK (release, split-per-abi + symbols)",
+      "type": "shell",
+      "command": "flutter clean; flutter pub get; flutter build apk --release --split-per-abi --split-debug-info=build/symbols --obfuscate",
+      "group": "build"
+    },
+    {
+      "label": "Flutter: Build debug APK",
+      "type": "shell",
+      "command": "flutter clean; flutter pub get; flutter build apk --debug",
+      "group": "build"
+    }
+  ]
+}
