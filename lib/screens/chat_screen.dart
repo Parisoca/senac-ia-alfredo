@@ -185,63 +185,67 @@ class _ChatScreenState extends State<ChatScreen> {
       valueListenable: LocalStorageService.listenable(),
       builder: (context, _, __) {
         final savedIds = LocalStorageService.bookmarkIds;
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: OutlinedButton.icon(
-                  onPressed: _isSending ? null : _confirmReset,
-                  icon: const Icon(Icons.restart_alt),
-                  label: const Text('Reiniciar conversa'),
+        return SafeArea(
+          top: false,
+          bottom: true,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: OutlinedButton.icon(
+                    onPressed: _isSending ? null : _confirmReset,
+                    icon: const Icon(Icons.restart_alt),
+                    label: const Text('Reiniciar conversa'),
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                itemCount: _entries.length + (_isSending ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (_isSending && index == _entries.length) {
-                    return _AssistantBubble(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                          SizedBox(width: 12),
-                          Text('Buscando sugestões...'),
-                        ],
-                      ),
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  itemCount: _entries.length + (_isSending ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (_isSending && index == _entries.length) {
+                      return _AssistantBubble(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            SizedBox(width: 12),
+                            Text('Buscando sugestões...'),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final entry = _entries[index];
+                    if (entry.isUser) {
+                      return _UserBubble(text: entry.text ?? '');
+                    }
+
+                    return _AssistantReply(
+                      entry: entry,
+                      savedIds: savedIds,
+                      onToggleBookmark: _toggleBookmark,
+                      onOpenLink: _openLink,
                     );
-                  }
-
-                  final entry = _entries[index];
-                  if (entry.isUser) {
-                    return _UserBubble(text: entry.text ?? '');
-                  }
-
-                  return _AssistantReply(
-                    entry: entry,
-                    savedIds: savedIds,
-                    onToggleBookmark: _toggleBookmark,
-                    onOpenLink: _openLink,
-                  );
-                },
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            _Composer(
-              controller: _controller,
-              onSend: _sendMessage,
-              isSending: _isSending,
-            ),
-          ],
+              const SizedBox(height: 8),
+              _Composer(
+                controller: _controller,
+                onSend: _sendMessage,
+                isSending: _isSending,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -262,53 +266,52 @@ class _Composer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SafeArea(
-      top: false,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1A000000),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                textInputAction: TextInputAction.send,
-                minLines: 1,
-                maxLines: 4,
-                onSubmitted: (_) => onSend(),
-                decoration: const InputDecoration.collapsed(
-                  hintText: 'Conte o que procura em sua próxima leitura...',
-                ),
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1A000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller,
+              textInputAction: TextInputAction.send,
+              minLines: 1,
+              maxLines: 4,
+              onSubmitted: (_) => onSend(),
+              style: const TextStyle(fontSize: 18, height: 1.45),
+              decoration: const InputDecoration.collapsed(
+                hintText: 'Conte o que procura em sua próxima leitura...',
+                hintStyle: TextStyle(fontSize: 18, height: 1.45),
               ),
             ),
-            const SizedBox(width: 12),
-            isSending
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2.4),
-                  )
-                : IconButton.filled(
-                    onPressed: onSend,
-                    style: IconButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: const Icon(Icons.send_rounded),
+          ),
+          const SizedBox(width: 12),
+          isSending
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2.4),
+                )
+              : IconButton.filled(
+                  onPressed: onSend,
+                  style: IconButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: Colors.white,
                   ),
-          ],
-        ),
+                  icon: const Icon(Icons.send_rounded),
+                ),
+        ],
       ),
     );
   }
@@ -338,7 +341,7 @@ class _UserBubble extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: const TextStyle(color: Colors.white, height: 1.35),
+          style: const TextStyle(color: Colors.white, fontSize: 18, height: 1.5),
         ),
       ),
     );
@@ -398,7 +401,10 @@ class _AssistantReply extends StatelessWidget {
     if ((entry.text ?? '').isNotEmpty) {
       widgets.add(
         _AssistantBubble(
-          child: Text(entry.text!.trim()),
+          child: Text(
+            entry.text!.trim(),
+            style: const TextStyle(fontSize: 18, height: 1.55),
+          ),
         ),
       );
     }
@@ -424,7 +430,10 @@ class _AssistantReply extends StatelessWidget {
 
     if (widgets.isEmpty) {
       return _AssistantBubble(
-        child: Text('Estou aqui para ajudar com novas leituras.'),
+        child: const Text(
+          'Estou aqui para ajudar com novas leituras.',
+          style: TextStyle(fontSize: 18, height: 1.55),
+        ),
       );
     }
 
