@@ -1,138 +1,144 @@
 import 'package:flutter/material.dart';
-
 import '../models/book_recommendation.dart';
 
 class RecommendationCard extends StatelessWidget {
   const RecommendationCard({
+    super.key,
     required this.recommendation,
     required this.isSaved,
     required this.onToggleBookmark,
     required this.onOpenLink,
-    super.key,
   });
 
   final BookRecommendation recommendation;
   final bool isSaved;
   final VoidCallback onToggleBookmark;
-  final Future<void> Function(String url) onOpenLink;
+  final Function(String) onOpenLink;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    final borderColor = primary.withAlpha(31);
     return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-        side: BorderSide(color: borderColor),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 1. ÁREA DA CAPA E TÍTULO
+          Container(
+            color: Colors.grey.shade100,
+            padding: const EdgeInsets.all(16),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    recommendation.title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                // Capa
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    recommendation.coverUrl,
+                    width: 100,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 100, 
+                      height: 150, 
+                      color: Colors.grey.shade300,
+                      child: const Icon(Icons.book, size: 40, color: Colors.grey),
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: onToggleBookmark,
-                  icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_outline),
-                  color: theme.colorScheme.primary,
-                  tooltip: isSaved ? 'Remover dos favoritos' : 'Salvar nos favoritos',
+                const SizedBox(width: 16),
+                // Título e Autor
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        recommendation.title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        recommendation.author,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade700,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Botão de Favorito pequeno
+                      InkWell(
+                        onTap: onToggleBookmark,
+                        child: Row(
+                          children: [
+                            Icon(
+                              isSaved ? Icons.bookmark : Icons.bookmark_border,
+                              color: isSaved ? Colors.orange : Colors.grey,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isSaved ? "Salvo" : "Salvar",
+                              style: TextStyle(
+                                color: isSaved ? Colors.orange : Colors.grey.shade600,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ],
             ),
-            if (recommendation.description.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(
-                recommendation.description,
-                style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
-              ),
-            ],
-            if (recommendation.reason.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              _HighlightBlock(
-                icon: Icons.lightbulb_outline,
-                label: 'Por que ler',
-                text: recommendation.reason,
-              ),
-            ],
-            if (recommendation.classicLink.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              _HighlightBlock(
-                icon: Icons.menu_book_outlined,
-                label: 'Conexão clássica',
-                text: recommendation.classicLink,
-              ),
-            ],
-            if (recommendation.amazonLink.isNotEmpty) ...[
-              const SizedBox(height: 18),
-              FilledButton.icon(
-                onPressed: () => onOpenLink(recommendation.amazonLink),
-                icon: const Icon(Icons.shopping_bag_outlined),
-                label: const Text('Ver na Amazon'),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HighlightBlock extends StatelessWidget {
-  const _HighlightBlock({
-    required this.icon,
-    required this.label,
-    required this.text,
-  });
-
-  final IconData icon;
-  final String label;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    final background = primary.withAlpha(15);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 18, color: primary),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            text,
-            style: theme.textTheme.bodySmall?.copyWith(height: 1.4),
+
+          // 2. MOTIVAÇÃO DO ALFREDO
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Por que o Alfredo recomenda:",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  recommendation.reason,
+                  style: const TextStyle(fontSize: 16, height: 1.4),
+                ),
+                const SizedBox(height: 16),
+                
+                // Botão de Ação Principal
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: () => onOpenLink(recommendation.amazonLink),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE47911), // Cor Amazon
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.shopping_cart_outlined),
+                    label: const Text(
+                      "VER NA AMAZON",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
